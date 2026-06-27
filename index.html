@@ -1,49 +1,29 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Waiting For Your Reply ❤️</title>
+<title>Timer ❤️</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    min-height:100vh;
+    margin:0;
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:Arial;
     background:linear-gradient(135deg,#ff9a9e,#fad0c4);
-    overflow:hidden;
+    color:white;
+    text-align:center;
 }
 
 .card{
     background:rgba(255,255,255,0.15);
-    backdrop-filter:blur(15px);
     padding:40px;
-    border-radius:25px;
-    text-align:center;
-    color:white;
+    border-radius:20px;
+    backdrop-filter:blur(10px);
     width:90%;
-    max-width:700px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.15);
-}
-
-h1{
-    font-size:2.5rem;
-    margin-bottom:15px;
-}
-
-.subtitle{
-    font-size:1.1rem;
-    opacity:0.9;
-    margin-bottom:25px;
+    max-width:500px;
 }
 
 #timer{
@@ -52,123 +32,91 @@ h1{
     margin:20px 0;
 }
 
-.status{
-    font-size:1.2rem;
-    opacity:0.95;
-}
-
 button{
-    margin-top:20px;
+    padding:10px 20px;
     border:none;
-    padding:12px 20px;
-    border-radius:12px;
+    border-radius:10px;
     cursor:pointer;
+    margin:5px;
     font-size:1rem;
-}
-
-.footer{
-    margin-top:25px;
-    font-size:0.9rem;
-    opacity:0.8;
 }
 </style>
 </head>
+
 <body>
 
 <div class="card">
-    <h1>❤️ MENUNGGU HANG REPLY atau BUKAK MESSAGE AKU ❤️</h1>
+    <h1>❤️ WAITING ❤️</h1>
 
-    <p class="subtitle">
-        This timer started when I opened this page.
-    </p>
+    <div id="timer">0d 0h 0m 0s</div>
 
-    <div id="timer">
-        0d 0h 0m 0s
-    </div>
-
-    <div id="status" class="status">
-        Waiting...
-    </div>
-
-    <button onclick="resetTimer()">
-        Reset Timer
-    </button>
-
-    <div class="footer">
-        Every second feels longer when it's someone special.
-    </div>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
 </div>
 
 <script>
 
-// Create start time only once
-if(!localStorage.getItem("replyTimerStart")){
-    localStorage.setItem(
-        "replyTimerStart",
-        Date.now()
-    );
-}
+let interval = null;
 
-function updateTimer(){
+// load saved state
+let startTime = localStorage.getItem("startTime");
+let endTime = localStorage.getItem("endTime");
 
-    const startTime =
-        Number(localStorage.getItem("replyTimerStart"));
+function update(){
 
-    const elapsed =
-        Date.now() - startTime;
+    const now = Date.now();
 
-    const totalSeconds =
-        Math.floor(elapsed / 1000);
+    const end = endTime ? Number(endTime) : now;
 
-    const days =
-        Math.floor(totalSeconds / 86400);
+    const start = Number(startTime);
 
-    const hours =
-        Math.floor((totalSeconds % 86400) / 3600);
+    const diff = end - start;
 
-    const minutes =
-        Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(diff / 1000);
 
-    const seconds =
-        totalSeconds % 60;
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
 
     document.getElementById("timer").innerHTML =
-        `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-    let status = "Still waiting ❤️";
-
-    if(days >= 1){
-        status = "A whole day has passed 🌷";
-    }
-
-    if(days >= 3){
-        status = "Maybe you're busy 😅";
-    }
-
-    if(days >= 7){
-        status = "The timer keeps going ⏳";
-    }
-
-    document.getElementById("status").innerHTML =
-        status;
+        `${d}d ${h}h ${m}m ${s}s`;
 }
 
-function resetTimer(){
+function startTimer(){
 
-    localStorage.setItem(
-        "replyTimerStart",
-        Date.now()
-    );
+    if(!startTime){
+        startTime = Date.now();
+        localStorage.setItem("startTime", startTime);
+    }
 
-    updateTimer();
+    localStorage.removeItem("endTime");
+    endTime = null;
+
+    if(interval) clearInterval(interval);
+
+    interval = setInterval(update, 1000);
+    update();
 }
 
-updateTimer();
-setInterval(updateTimer,1000);
+function stopTimer(){
+
+    if(!startTime) return;
+
+    endTime = Date.now();
+    localStorage.setItem("endTime", endTime);
+
+    clearInterval(interval);
+    update();
+}
+
+// auto run if already started
+if(startTime){
+    interval = setInterval(update, 1000);
+    update();
+}
 
 </script>
 
 </body>
 </html>
-```
-
